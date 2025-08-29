@@ -1,10 +1,11 @@
 <?php
-function send_task_to_api($title, $description, $assigned_to, $due_date) {
-    $url = "{}"; // Replace with your actual API endpoint
+function send_task_to_api($title, $description, $full_name, $username, $due_date) {
+    $url = "https://hooks.zapier.com/hooks/catch/15603921/uh897nu/"; // Replace with your actual API endpoint
     $data = array(
         'title' => $title,
         'description' => $description,
-        'assigned_to' => $assigned_to,
+        'full_name' => $full_name,
+        'username' => $username,
         'due_date' => $due_date
     );
 
@@ -30,13 +31,20 @@ function send_task_to_api($title, $description, $assigned_to, $due_date) {
     );
 }
 
-function send_task_approval_to_api($task_id, $status, $title, $admin_id) {
-    $url = "{}"; // Replace with your actual API endpoint
+function send_task_approval_to_api($task_id, $status, $title, $description, $assigned_to, $admin_id, $admin_full_name, $admin_username, $full_name, $username) {
+    $url = "https://hooks.zapier.com/hooks/catch/15603921/uh8533j/"; // Replace with your actual API endpoint
+
     $data = array(
-        'task_id' => $task_id,
-        'status' => $status,
-        'title' => $title,
-        'admin_id' => $admin_id
+        'task_id'        => $task_id,
+        'status'         => $status,
+        'title'          => $title,
+        'description'    => $description,
+        'assigned_to'    => $assigned_to,
+        'admin_id'       => $admin_id,
+        'admin_full_name'=> $admin_full_name,
+        'admin_username' => $admin_username,
+        'user_full_name' => $full_name,
+        'user_username'  => $username
     );
 
     $json_data = json_encode($data);

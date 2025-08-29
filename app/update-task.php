@@ -19,6 +19,25 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
         $id = validate_input($_POST['id']);
         $due_date = validate_input($_POST['due_date']);
 
+        $sql = "SELECT full_name, username FROM users WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+
+        // Bind parameter
+        $stmt->bindParam(':id', $assigned_to, PDO::PARAM_INT);
+
+        // Execute
+        $stmt->execute();
+
+        // Fetch row and assign to variables
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $full_name = $row['full_name'];
+            $username = $row['username'];
+        } else {
+            $full_name = null;
+            $username = null;
+	    }
+
+
         if (empty($title)) {
             $em = "Title is required";
             header("Location: ../edit-task.php?error=$em&id=$id");
@@ -33,7 +52,7 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
             exit();
         } else {
             include "Model/task.php";
-            $api_result = send_task_to_api($title, $description, $assigned_to, $due_date);
+            $api_result = send_task_to_api($title, $description, $full_name, $username, $due_date);
             if ($api_result['success']) {
                 $data = array($title, $description, $assigned_to, $due_date, $id);
                 update_task($conn, $data);

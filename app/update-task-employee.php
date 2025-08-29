@@ -41,7 +41,26 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
                 $admin = get_admin_user($conn); // you need a function in User.php
                 if ($admin) {
                     $task = get_task_by_id($conn, $id); 
-                    $api_result = send_task_approval_to_api($id, $status, $task['title'], $admin['id']);
+                    $assigned_to = $task['assigned_to'];
+                    // Prepare the SQL query
+                    $sql = "SELECT full_name, username FROM users WHERE id = :id";
+                    $stmt = $conn->prepare($sql);
+
+                    // Bind parameter
+                    $stmt->bindParam(':id', $assigned_to, PDO::PARAM_INT);
+
+                    // Execute
+                    $stmt->execute();
+
+                    // Fetch row and assign to variables
+                    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $full_name = $row['full_name'];
+                        $username = $row['username'];
+                    } else {
+                        $full_name = null;
+                        $username = null;
+                    }
+                    $api_result = send_task_approval_to_api($id, $status, $task['title'], $task['description'], $task['assigned_to'], $admin['id'], $admin['full_name'], $admin['username'], $full_name, $username);
                     
                     // Proceed with notification only if API call is successful
                     if ($api_result['success']) {

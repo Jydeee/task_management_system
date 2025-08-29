@@ -75,7 +75,7 @@
 }
 
 function get_admin_user($conn) {
-    $stmt = $conn->prepare("SELECT id, username FROM users WHERE role = 'admin' LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, username, full_name FROM users WHERE role = 'admin' LIMIT 1");
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
