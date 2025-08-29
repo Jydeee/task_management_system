@@ -4,6 +4,7 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
 
     if (isset($_POST['id']) && isset($_POST['status']) && $_SESSION['role'] == 'employee') {
         include "../DB_connection.php";
+        include "send-to-api.php";
         // include "Model/user.php";
 
         function validate_input($data) {
@@ -40,9 +41,19 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
                 $admin = get_admin_user($conn); // you need a function in User.php
                 if ($admin) {
                     $task = get_task_by_id($conn, $id); 
-                    $notif_message = "Task '" . $task['title'] . "' has been completed by employee. Please review and approve.";
-                    $notif_data = array($notif_message, $admin['id'], 'task_approval');
-                    insert_notification($conn, $notif_data);
+                    $api_result = send_task_approval_to_api($id, $status, $task['title'], $admin['id']);
+                    
+                    // Proceed with notification only if API call is successful
+                    if ($api_result['success']) {
+                        $notif_message = "Task '" . $task['title'] . "' has been completed by employee. Please review and approve.";
+                        $notif_data = array($notif_message, $admin['id'], 'task_approval');
+                        insert_notification($conn, $notif_data);
+                    } else {
+                        $em = "Failed to send task update to API";
+                        header("Location: ../edit-task-employee.php?error=$em&id=$id");
+                        exit();
+                    }
+                    
                 }
             }
 

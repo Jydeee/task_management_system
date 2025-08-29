@@ -4,6 +4,7 @@ if(isset($_SESSION['role']) && isset($_SESSION['id'])) {
 
 if (isset($_POST['title']) && isset($_POST['description'])  && isset($_POST['assigned_to']) && $_SESSION['role'] == 'admin' && isset($_POST['due_date'])) {
 	include "../DB_connection.php";
+	include "send-to-api.php";
 
     function validate_input($data) {
 	  $data = trim($data);
@@ -40,15 +41,21 @@ if (isset($_POST['title']) && isset($_POST['description'])  && isset($_POST['ass
         include "Model/task.php";
 		include "Model/notification.php";
 
-        $data = array($title, $description, $assigned_to, $due_date);
-        insert_task($conn, $data);
+		$api_result = send_task_to_api($title, $description, $assigned_to, $due_date);
+		if ($api_result['success']) {
+			$data = array($title, $description, $assigned_to, $due_date);
+			insert_task($conn, $data);
+			$notif_data = array("$title has been assigned to you. Please review and start working on it", $assigned_to, 'task');
+			insert_notification($conn, $notif_data);
+			$em = "Task created successfully";
+			header("Location: ../create_task.php?success=$em");
+			exit();
+		} else {
+			$em = "Failed to send task to API";
+			header("Location: ../create_task.php?error=$em");
+			exit();
+		}	
 
-		$notif_data = array("$title has been assigned to you. Please review and start working on it", $assigned_to, 'task');
-		insert_notification($conn, $notif_data);	
-
-        $em = "Task created successfully";
-	    header("Location: ../create_task.php?success=$em");
-	    exit();
 	}
 }else {
    $em = "Unknown error occurred";
